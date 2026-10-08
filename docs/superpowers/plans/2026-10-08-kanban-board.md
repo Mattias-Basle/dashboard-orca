@@ -1754,7 +1754,7 @@ git commit -m "feat: add Zustand board store with optimistic updates and rollbac
 Small presentational pieces with no store access. Built before the board so Tasks 7–10 can compose them.
 
 **Files:**
-- Create: `src/components/ui/TypeIcon.tsx`, `PriorityIcon.tsx`, `Avatar.tsx`, `LabelChip.tsx`, `Modal.tsx`, `ConfirmDialog.tsx`, `Toast.tsx`, `Banner.tsx`
+- Create: `src/components/ui/TypeIcon.tsx`, `PriorityIcon.tsx`, `Avatar.tsx`, `LabelChip.tsx`, `Modal.tsx`, `Toast.tsx`, `Banner.tsx`
 - Test: `src/components/ui/primitives.test.tsx`
 
 **Interfaces:**
@@ -1763,7 +1763,6 @@ Small presentational pieces with no store access. Built before the board so Task
   - `<TypeIcon type={TicketType} />`, `<PriorityIcon priority={Priority} />`
   - `<Avatar member={Member | null} />`, `<LabelChip label={string} onRemove?={() => void} />`
   - `<Modal open labelledBy onClose>{children}</Modal>`
-  - `<ConfirmDialog open title message confirmLabel onConfirm onCancel />`
   - `<Toast message={string | null} onDismiss={() => void} />`
   - `<Banner message={string} onDismiss={() => void} />`
 
@@ -2050,56 +2049,7 @@ export function Modal({
 }
 ```
 
-- [ ] **Step 5: Create `ConfirmDialog.tsx`, `Toast.tsx` and `Banner.tsx`**
-
-`src/components/ui/ConfirmDialog.tsx`:
-
-```tsx
-import { Modal } from './Modal'
-
-export function ConfirmDialog({
-  open,
-  title,
-  message,
-  confirmLabel = 'Confirm',
-  onConfirm,
-  onCancel,
-}: {
-  open: boolean
-  title: string
-  message: string
-  confirmLabel?: string
-  onConfirm: () => void
-  onCancel: () => void
-}) {
-  return (
-    <Modal open={open} labelledBy="confirm-title" onClose={onCancel}>
-      <div className="p-5">
-        <h2 id="confirm-title" className="text-sm font-semibold text-slate-800">
-          {title}
-        </h2>
-        <p className="mt-2 text-sm text-slate-600">{message}</p>
-        <div className="mt-5 flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="rounded px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={onConfirm}
-            className="rounded bg-rose-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-rose-700"
-          >
-            {confirmLabel}
-          </button>
-        </div>
-      </div>
-    </Modal>
-  )
-}
-```
+- [ ] **Step 5: Create `Toast.tsx` and `Banner.tsx`**
 
 `src/components/ui/Toast.tsx` — auto-dismisses after 5s:
 
@@ -3193,7 +3143,7 @@ git commit -m "feat: add ticket modal for create, edit and delete"
 - Test: `src/components/board/columnCrud.test.tsx`
 
 **Interfaces:**
-- Consumes: `useBoardStore` actions `addColumn`, `renameColumn`, `deleteColumn`, `reorderColumn`; `ConfirmDialog`
+- Consumes: `useBoardStore` actions `addColumn`, `renameColumn`, `deleteColumn`, `reorderColumn`; `Modal`, `Select`
 - Produces: `<ColumnHeader column={Column} ticketCount={number} canDelete={boolean} onRequestDelete={() => void} />` — inline rename on double-click, a menu with Move left / Move right / Delete
 
 - [ ] **Step 1: Write the failing tests**
@@ -3493,7 +3443,7 @@ function requestDeleteColumn(columnId: string) {
 }
 ```
 
-Rendered alongside the board — a plain `Modal`, since the choice needs a select rather than a yes/no:
+Rendered alongside the board. This uses `Modal` directly rather than a generic confirm dialog, because the choice needs a select (where do the tickets go?) rather than a yes/no:
 
 ```tsx
 <Modal
@@ -3574,6 +3524,6 @@ git commit -m "feat: add column create, rename, reorder and delete"
 
 ## Done
 
-The board is feature-complete for the MVP. `ConfirmDialog` from Task 6 is intentionally unused by the final flow — the delete-column case needed a select rather than a yes/no — so either delete it or keep it for the first flow that needs a plain confirmation.
+The board is feature-complete for the MVP.
 
 When the backend phase starts: write `HttpBoardApi` against `src/api/BoardApi.ts`, return it from `createBoardApi()` in `src/api/index.ts`, and delete `src/api/seedData.ts`. Nothing above that line should need to change.
