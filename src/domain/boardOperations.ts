@@ -1,4 +1,4 @@
-import type { BoardSnapshot, Ticket } from '../types/board'
+import type { BoardSnapshot, Column, Disposition, Ticket } from '../types/board'
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max)
@@ -88,4 +88,76 @@ export function applyMoveTicket(
       return { ...c, ticketIds: next }
     }),
   }
+}
+
+export function applyAddColumn(s: BoardSnapshot, column: Column): BoardSnapshot {
+  return { ...s, columns: [...s.columns, column] }
+}
+
+export function applyReplaceColumn(
+  s: BoardSnapshot,
+  tempId: string,
+  saved: Column,
+): BoardSnapshot {
+  if (!s.columns.some((c) => c.id === tempId)) return s
+  return {
+    ...s,
+    columns: s.columns.map((c) =>
+      c.id === tempId ? { ...saved, ticketIds: c.ticketIds } : c,
+    ),
+  }
+}
+
+export function applyRenameColumn(
+  s: BoardSnapshot,
+  id: string,
+  name: string,
+): BoardSnapshot {
+  if (!s.columns.some((c) => c.id === id)) return s
+  return {
+    ...s,
+    columns: s.columns.map((c) => (c.id === id ? { ...c, name } : c)),
+  }
+}
+
+export function applyDeleteColumn(
+  s: BoardSnapshot,
+  id: string,
+  disposition: Disposition,
+): BoardSnapshot {
+  const column = s.columns.find((c) => c.id === id)
+  if (!column) return s
+  if (s.columns.length <= 1) return s
+
+  if (disposition.kind === 'move') {
+    const target = disposition.toColumnId
+    if (target === id || !s.columns.some((c) => c.id === target)) return s
+    return {
+      ...s,
+      columns: s.columns
+        .filter((c) => c.id !== id)
+        .map((c) =>
+          c.id === target
+            ? { ...c, ticketIds: [...c.ticketIds, ...column.ticketIds] }
+            : c,
+        ),
+    }
+  }
+
+  const tickets = { ...s.tickets }
+  for (const ticketId of column.ticketIds) delete tickets[ticketId]
+  return { ...s, tickets, columns: s.columns.filter((c) => c.id !== id) }
+}
+
+export function applyReorderColumn(
+  s: BoardSnapshot,
+  id: string,
+  toIndex: number,
+): BoardSnapshot {
+  const from = s.columns.findIndex((c) => c.id === id)
+  if (from === -1) return s
+  const next = [...s.columns]
+  const [moved] = next.splice(from, 1)
+  next.splice(clamp(toIndex, 0, next.length), 0, moved)
+  return { ...s, columns: next }
 }
