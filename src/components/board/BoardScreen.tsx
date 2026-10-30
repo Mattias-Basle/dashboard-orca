@@ -25,12 +25,15 @@ export function BoardScreen() {
   const otherColumns = board?.columns.filter((c) => c.id !== deletingColumnId) ?? []
 
   function requestDeleteColumn(columnId: string) {
-    const column = board!.columns.find((c) => c.id === columnId)!
+    const column = board?.columns.find((c) => c.id === columnId)
+    if (!column) return
     if (column.ticketIds.length === 0) {
       void deleteColumn(columnId, { kind: 'delete' })
       return
     }
-    setMoveTarget(board!.columns.find((c) => c.id !== columnId)!.id)
+    const target = board?.columns.find((c) => c.id !== columnId)
+    if (!target) return
+    setMoveTarget(target.id)
     setDeletingColumnId(columnId)
   }
 

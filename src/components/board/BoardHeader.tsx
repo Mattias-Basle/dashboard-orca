@@ -36,7 +36,10 @@ export function BoardHeader() {
             onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') void submit()
-              if (e.key === 'Escape') setAdding(false)
+              if (e.key === 'Escape') {
+                setAdding(false)
+                setName('')
+              }
             }}
             className="rounded border border-slate-300 px-2 py-1 text-sm"
           />

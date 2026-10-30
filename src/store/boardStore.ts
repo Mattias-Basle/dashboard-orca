@@ -37,5 +37,3 @@ export function __resetBoardStoreForTests(): void {
     error: null,
   })
 }
-
-export type { BoardStore } from './createBoardStore'
