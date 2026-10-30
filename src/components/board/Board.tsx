@@ -15,9 +15,11 @@ import { resolveDrop } from './resolveDrop'
 export function Board({
   onOpenTicket,
   onCreate,
+  onRequestDeleteColumn,
 }: {
   onOpenTicket: (id: string) => void
   onCreate: (columnId: string) => void
+  onRequestDeleteColumn: (columnId: string) => void
 }) {
   const board = useBoardStore((s) => s.board)
   const moveTicket = useBoardStore((s) => s.moveTicket)
@@ -47,6 +49,8 @@ export function Board({
             members={board.members}
             onOpenTicket={onOpenTicket}
             onCreate={() => onCreate(column.id)}
+            canDelete={board.columns.length > 1}
+            onRequestDelete={() => onRequestDeleteColumn(column.id)}
           />
         ))}
       </div>

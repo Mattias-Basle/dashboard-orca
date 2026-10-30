@@ -2,6 +2,7 @@ import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import type { Column as ColumnModel, Member, Ticket } from '../../types/board'
 import { SortableTicket } from './SortableTicket'
+import { ColumnHeader } from './ColumnHeader'
 
 export function Column({
   column,
@@ -9,12 +10,16 @@ export function Column({
   members,
   onOpenTicket,
   onCreate,
+  canDelete,
+  onRequestDelete,
 }: {
   column: ColumnModel
   tickets: Ticket[]
   members: Member[]
   onOpenTicket: (id: string) => void
   onCreate: () => void
+  canDelete: boolean
+  onRequestDelete: () => void
 }) {
   const { setNodeRef } = useDroppable({ id: column.id, data: { type: 'column' } })
 
@@ -23,14 +28,12 @@ export function Column({
       data-testid={`column-${column.id}`}
       className="flex w-72 shrink-0 flex-col rounded-lg bg-slate-100 p-2"
     >
-      <header className="flex items-center gap-2 px-1 py-1.5">
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-600">
-          {column.name}
-        </h2>
-        <span className="rounded-full bg-slate-200 px-1.5 text-[11px] text-slate-600">
-          {tickets.length}
-        </span>
-      </header>
+      <ColumnHeader
+        column={column}
+        ticketCount={tickets.length}
+        canDelete={canDelete}
+        onRequestDelete={onRequestDelete}
+      />
 
       <SortableContext items={column.ticketIds} strategy={verticalListSortingStrategy}>
         <div ref={setNodeRef} className="flex min-h-16 flex-col gap-2">
