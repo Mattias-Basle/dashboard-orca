@@ -67,6 +67,16 @@ export function ColumnHeader({
         <div className="absolute right-0 top-8 z-10 w-40 rounded border border-slate-200 bg-white py-1 text-sm shadow-lg">
           <button
             type="button"
+            onClick={() => {
+              setMenuOpen(false)
+              setEditing(true)
+            }}
+            className="block w-full px-3 py-1.5 text-left hover:bg-slate-100"
+          >
+            Rename
+          </button>
+          <button
+            type="button"
             disabled={index === 0}
             onClick={() => {
               setMenuOpen(false)

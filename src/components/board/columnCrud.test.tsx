@@ -37,6 +37,23 @@ describe('renaming a column', () => {
   })
 })
 
+describe('renaming a column via the actions menu', () => {
+  it('reveals the rename input without a double-click', async () => {
+    render(<BoardScreen />)
+    const todo = await screen.findByTestId('column-col-todo')
+
+    await userEvent.click(within(todo).getByRole('button', { name: /column actions/i }))
+    await userEvent.click(screen.getByRole('button', { name: /^rename$/i }))
+
+    const input = within(todo).getByLabelText(/rename column/i)
+    await userEvent.clear(input)
+    await userEvent.type(input, 'Backlog')
+    await userEvent.tab()
+
+    expect(useBoardStore.getState().board!.columns[0].name).toBe('Backlog')
+  })
+})
+
 describe('reordering columns', () => {
   it('moves a column right', async () => {
     render(<BoardScreen />)

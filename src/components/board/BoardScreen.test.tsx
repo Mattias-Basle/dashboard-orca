@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { BoardScreen } from './BoardScreen'
 import { __resetBoardStoreForTests } from '../../store/boardStore'
 
@@ -23,5 +24,16 @@ describe('BoardScreen', () => {
     render(<BoardScreen />)
     const todo = await screen.findByTestId('column-col-todo')
     expect(todo).toHaveTextContent('2')
+  })
+
+  it('opens the ticket dialog when a focused card receives Enter', async () => {
+    render(<BoardScreen />)
+    const card = await screen.findByTestId('ticket-seed-1')
+    card.focus()
+    expect(card).toHaveFocus()
+
+    await userEvent.keyboard('{Enter}')
+
+    expect(await screen.findByRole('dialog')).toBeInTheDocument()
   })
 })
