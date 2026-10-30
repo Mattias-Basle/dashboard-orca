@@ -210,6 +210,12 @@ async function runOptimistic(apply, call, commit?) {
 `addTicket` and `addColumn` pass a `commit` to swap the temp id for the real one. The rest
 pass none.
 
+The implementation uses one fixed message per action (`'Could not create the ticket.'`,
+etc.) rather than a `messageFor(err)` helper that differentiates failure causes. Deferred
+to the backend phase — against `LocalStorageBoardApi`, the only real failure modes are
+indistinguishable to the user, and differentiating HTTP failures (network vs. 4xx vs. 5xx)
+is only meaningful once there is an actual HTTP layer.
+
 Components call `await addTicket({...})`. That call signature is identical before and
 after the backend exists.
 
@@ -261,17 +267,26 @@ src/
   store/boardStore.ts
   components/board/{BoardScreen,Board,BoardHeader,Column,ColumnHeader,TicketCard}.tsx
   components/ticket/{TicketModal,TicketForm}.tsx
-  components/ui/{Modal,ConfirmDialog,Toast,Banner,Avatar,LabelChip,TypeIcon,PriorityIcon,Select}.tsx
+  components/ui/{Modal,Toast,Banner,Avatar,LabelChip,TypeIcon,PriorityIcon,Select}.tsx
   lib/ids.ts
 ```
 
-Each file stays focused and under roughly 150 lines. A file outgrowing that is a signal
-it's doing too much.
+`components/ui/ConfirmDialog.tsx` was deliberately dropped before implementation: the
+delete-column flow needs a dropdown (which column should inherit its tickets), not a
+yes/no choice, so that confirmation inlines `Modal` + `Select` directly in `BoardScreen`
+instead of going through a generic confirm component.
+
+Each file stays focused and roughly 175 lines, and the real test is whether the file has
+one job. A file outgrowing that line count is a signal worth checking, not a hard limit —
+during implementation, four files settled at 163-171 lines, each still a single cohesive
+concern, while the one file that genuinely did two jobs was split up. The guideline caught
+the real case; the round number was generating false positives.
 
 ## 8. Data flow
 
 On mount, `BoardScreen` calls `store.load()`, which awaits `api.getBoard()` and sets
-`status: 'ready'`. While loading, a skeleton board renders.
+`status: 'ready'`. While loading, a `Loading board…` line renders — a skeleton board isn't
+worth building at this stage.
 
 A user action calls a store action. The action applies the pure operation optimistically,
 awaits the API, then commits or rolls back. React re-renders from the store.
