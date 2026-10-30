@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import type { Member, Ticket } from '../../types/board'
 import { TypeIcon } from '../ui/TypeIcon'
 import { PriorityIcon } from '../ui/PriorityIcon'
@@ -8,17 +9,30 @@ export function TicketCard({
   ticket,
   member,
   onOpen,
+  dragRef,
+  dragProps,
+  style,
+  isDragging,
 }: {
   ticket: Ticket
   member: Member | null
   onOpen: () => void
+  dragRef?: (node: HTMLElement | null) => void
+  dragProps?: Record<string, unknown>
+  style?: CSSProperties
+  isDragging?: boolean
 }) {
   return (
     <button
       type="button"
+      ref={dragRef}
+      style={style}
       onClick={onOpen}
       data-testid={`ticket-${ticket.id}`}
-      className="w-full rounded border border-slate-200 bg-white p-2.5 text-left shadow-sm hover:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400"
+      className={`w-full rounded border border-slate-200 bg-white p-2.5 text-left shadow-sm hover:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400 ${
+        isDragging ? 'opacity-40' : ''
+      }`}
+      {...dragProps}
     >
       <p className="text-sm text-slate-800">{ticket.title}</p>
 

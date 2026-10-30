@@ -1,5 +1,7 @@
+import { useDroppable } from '@dnd-kit/core'
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import type { Column as ColumnModel, Member, Ticket } from '../../types/board'
-import { TicketCard } from './TicketCard'
+import { SortableTicket } from './SortableTicket'
 
 export function Column({
   column,
@@ -12,6 +14,8 @@ export function Column({
   members: Member[]
   onOpenTicket: (id: string) => void
 }) {
+  const { setNodeRef } = useDroppable({ id: column.id, data: { type: 'column' } })
+
   return (
     <section
       data-testid={`column-${column.id}`}
@@ -26,16 +30,18 @@ export function Column({
         </span>
       </header>
 
-      <div className="flex flex-col gap-2">
-        {tickets.map((ticket) => (
-          <TicketCard
-            key={ticket.id}
-            ticket={ticket}
-            member={members.find((m) => m.id === ticket.assigneeId) ?? null}
-            onOpen={() => onOpenTicket(ticket.id)}
-          />
-        ))}
-      </div>
+      <SortableContext items={column.ticketIds} strategy={verticalListSortingStrategy}>
+        <div ref={setNodeRef} className="flex min-h-16 flex-col gap-2">
+          {tickets.map((ticket) => (
+            <SortableTicket
+              key={ticket.id}
+              ticket={ticket}
+              member={members.find((m) => m.id === ticket.assigneeId) ?? null}
+              onOpen={() => onOpenTicket(ticket.id)}
+            />
+          ))}
+        </div>
+      </SortableContext>
     </section>
   )
 }
