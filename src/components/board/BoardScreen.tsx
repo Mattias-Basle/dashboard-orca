@@ -4,6 +4,7 @@ import { BoardHeader } from './BoardHeader'
 import { Board } from './Board'
 import { Toast } from '../ui/Toast'
 import { Banner } from '../ui/Banner'
+import { TicketModal, type TicketModalMode } from '../ticket/TicketModal'
 
 export function BoardScreen() {
   const status = useBoardStore((s) => s.status)
@@ -12,6 +13,7 @@ export function BoardScreen() {
   const load = useBoardStore((s) => s.load)
   const dismissError = useBoardStore((s) => s.dismissError)
   const [bannerDismissed, setBannerDismissed] = useState(false)
+  const [modalMode, setModalMode] = useState<TicketModalMode>(null)
 
   useEffect(() => {
     void load()
@@ -33,7 +35,11 @@ export function BoardScreen() {
         />
       )}
       <BoardHeader />
-      <Board onOpenTicket={() => {}} />
+      <Board
+        onOpenTicket={(ticketId) => setModalMode({ kind: 'edit', ticketId })}
+        onCreate={(columnId) => setModalMode({ kind: 'create', columnId })}
+      />
+      <TicketModal mode={modalMode} onClose={() => setModalMode(null)} />
       <Toast message={error} onDismiss={dismissError} />
     </div>
   )

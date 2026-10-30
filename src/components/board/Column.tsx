@@ -8,11 +8,13 @@ export function Column({
   tickets,
   members,
   onOpenTicket,
+  onCreate,
 }: {
   column: ColumnModel
   tickets: Ticket[]
   members: Member[]
   onOpenTicket: (id: string) => void
+  onCreate: () => void
 }) {
   const { setNodeRef } = useDroppable({ id: column.id, data: { type: 'column' } })
 
@@ -42,6 +44,14 @@ export function Column({
           ))}
         </div>
       </SortableContext>
+
+      <button
+        type="button"
+        onClick={onCreate}
+        className="mt-2 rounded px-2 py-1.5 text-left text-sm text-slate-500 hover:bg-slate-200"
+      >
+        + Create
+      </button>
     </section>
   )
 }

@@ -12,7 +12,13 @@ import { useBoardStore } from '../../store/boardStore'
 import { Column } from './Column'
 import { resolveDrop } from './resolveDrop'
 
-export function Board({ onOpenTicket }: { onOpenTicket: (id: string) => void }) {
+export function Board({
+  onOpenTicket,
+  onCreate,
+}: {
+  onOpenTicket: (id: string) => void
+  onCreate: (columnId: string) => void
+}) {
   const board = useBoardStore((s) => s.board)
   const moveTicket = useBoardStore((s) => s.moveTicket)
 
@@ -40,6 +46,7 @@ export function Board({ onOpenTicket }: { onOpenTicket: (id: string) => void }) 
             tickets={column.ticketIds.map((id) => board.tickets[id]).filter(Boolean)}
             members={board.members}
             onOpenTicket={onOpenTicket}
+            onCreate={() => onCreate(column.id)}
           />
         ))}
       </div>
