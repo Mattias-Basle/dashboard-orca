@@ -10,6 +10,7 @@ import {
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import { useBoardStore } from '../../store/boardStore'
 import { Column } from './Column'
+import { resolveDrop } from './resolveDrop'
 
 export function Board({ onOpenTicket }: { onOpenTicket: (id: string) => void }) {
   const board = useBoardStore((s) => s.board)
@@ -24,28 +25,9 @@ export function Board({ onOpenTicket }: { onOpenTicket: (id: string) => void }) 
 
   function handleDragEnd({ active, over }: DragEndEvent) {
     if (!over || !board) return
-    const ticketId = String(active.id)
-    const overId = String(over.id)
-    if (ticketId === overId) return
-
-    const targetColumn =
-      board.columns.find((c) => c.id === overId) ??
-      board.columns.find((c) => c.ticketIds.includes(overId))
-    if (!targetColumn) return
-
-    const source = board.columns.find((c) => c.ticketIds.includes(ticketId))
-    if (!source) return
-
-    const withoutTicket = targetColumn.ticketIds.filter((id) => id !== ticketId)
-    const index =
-      targetColumn.id === overId
-        ? withoutTicket.length
-        : withoutTicket.indexOf(overId)
-
-    if (source.id === targetColumn.id && source.ticketIds.indexOf(ticketId) === index) {
-      return
-    }
-    void moveTicket(ticketId, targetColumn.id, index)
+    const move = resolveDrop(board, String(active.id), String(over.id))
+    if (!move) return
+    void moveTicket(String(active.id), move.toColumnId, move.toIndex)
   }
 
   return (
