@@ -16,15 +16,25 @@ export function Modal({
   children: ReactNode
 }) {
   const panelRef = useRef<HTMLDivElement>(null)
+  const onCloseRef = useRef(onClose)
+
+  useEffect(() => {
+    onCloseRef.current = onClose
+  }, [onClose])
 
   useEffect(() => {
     if (!open) return
     const previouslyFocused = document.activeElement as HTMLElement | null
-    panelRef.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus()
+    const nodesAtOpen = panelRef.current
+      ? Array.from(panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE))
+      : []
+    const closeButton = panelRef.current?.querySelector<HTMLElement>('[aria-label="Close"]')
+    const firstMeaningful = nodesAtOpen.find((node) => node !== closeButton)
+    ;(firstMeaningful ?? nodesAtOpen[0])?.focus()
 
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
-        onClose()
+        onCloseRef.current()
         return
       }
       if (event.key !== 'Tab' || !panelRef.current) return
@@ -46,7 +56,7 @@ export function Modal({
       document.removeEventListener('keydown', onKeyDown)
       previouslyFocused?.focus()
     }
-  }, [open, onClose])
+  }, [open])
 
   if (!open) return null
 
@@ -54,7 +64,7 @@ export function Modal({
     <div
       data-testid="modal-backdrop"
       onMouseDown={(e) => {
-        if (e.target === e.currentTarget) onClose()
+        if (e.target === e.currentTarget) onCloseRef.current()
       }}
       className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/40 p-8"
     >

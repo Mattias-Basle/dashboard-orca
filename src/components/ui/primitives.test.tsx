@@ -68,6 +68,44 @@ describe('Modal', () => {
     await userEvent.click(screen.getByTestId('modal-backdrop'))
     expect(onClose).toHaveBeenCalled()
   })
+
+  it('keeps focus in place when the parent re-renders with a fresh onClose', () => {
+    // Mirrors the real call sites (BoardScreen), which pass a fresh inline
+    // arrow as `onClose` on every render.
+    function Wrapper({ counter }: { counter: number }) {
+      return (
+        <>
+          <span>{counter}</span>
+          <Modal open labelledBy="t" onClose={() => {}}>
+            <h2 id="t">Shown</h2>
+            <input aria-label="field" />
+          </Modal>
+        </>
+      )
+    }
+
+    const { rerender } = render(<Wrapper counter={0} />)
+    const field = screen.getByLabelText('field')
+    field.focus()
+    expect(field).toHaveFocus()
+
+    rerender(<Wrapper counter={1} />)
+
+    expect(field).toHaveFocus()
+  })
+
+  it('focuses the first meaningful control, not a Close button', () => {
+    render(
+      <Modal open labelledBy="t" onClose={() => {}}>
+        <h2 id="t">Shown</h2>
+        <button type="button" aria-label="Close">
+          ×
+        </button>
+        <input aria-label="field" />
+      </Modal>,
+    )
+    expect(screen.getByLabelText('field')).toHaveFocus()
+  })
 })
 
 describe('Toast', () => {
