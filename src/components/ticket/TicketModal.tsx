@@ -54,23 +54,25 @@ export function TicketModal({
       }
 
   async function handleSubmit(values: TicketFormValues) {
+    let succeeded = true
     if (mode?.kind === 'create') {
-      await addTicket(values)
+      succeeded = await addTicket(values)
     } else if (mode?.kind === 'edit') {
       const { columnId, ...fields } = values
-      await updateTicket(mode.ticketId, fields)
+      succeeded = await updateTicket(mode.ticketId, fields)
       if (columnId !== currentColumnId) {
         const target = board!.columns.find((c) => c.id === columnId)
-        await moveTicket(mode.ticketId, columnId, target ? target.ticketIds.length : 0)
+        const moved = await moveTicket(mode.ticketId, columnId, target ? target.ticketIds.length : 0)
+        succeeded = succeeded && moved
       }
     }
-    onClose()
+    if (succeeded) onClose()
   }
 
   async function handleDelete() {
     if (mode?.kind !== 'edit') return
-    await deleteTicket(mode.ticketId)
-    onClose()
+    const succeeded = await deleteTicket(mode.ticketId)
+    if (succeeded) onClose()
   }
 
   return (

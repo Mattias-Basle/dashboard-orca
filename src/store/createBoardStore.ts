@@ -28,14 +28,14 @@ export type BoardStore = {
   error: string | null
 
   load(): Promise<void>
-  addTicket(input: TicketInput): Promise<void>
-  updateTicket(id: string, patch: Partial<Ticket>): Promise<void>
-  deleteTicket(id: string): Promise<void>
-  moveTicket(id: string, toColumnId: string, toIndex: number): Promise<void>
-  addColumn(name: string): Promise<void>
-  renameColumn(id: string, name: string): Promise<void>
-  deleteColumn(id: string, disposition: Disposition): Promise<void>
-  reorderColumn(id: string, toIndex: number): Promise<void>
+  addTicket(input: TicketInput): Promise<boolean>
+  updateTicket(id: string, patch: Partial<Ticket>): Promise<boolean>
+  deleteTicket(id: string): Promise<boolean>
+  moveTicket(id: string, toColumnId: string, toIndex: number): Promise<boolean>
+  addColumn(name: string): Promise<boolean>
+  renameColumn(id: string, name: string): Promise<boolean>
+  deleteColumn(id: string, disposition: Disposition): Promise<boolean>
+  reorderColumn(id: string, toIndex: number): Promise<boolean>
   dismissError(): void
 }
 
@@ -50,17 +50,19 @@ export function createBoardStore(api: BoardApi) {
       call: () => Promise<unknown>,
       fallbackMessage: string,
       commit?: (s: BoardSnapshot, result: never) => BoardSnapshot,
-    ): Promise<void> {
+    ): Promise<boolean> {
       const snapshot = get().board
-      if (!snapshot) return
+      if (!snapshot) return false
       set({ board: apply(snapshot), error: null })
       try {
         const result = await call()
         if (commit) {
           set((s) => ({ board: commit(s.board!, result as never) }))
         }
+        return true
       } catch {
         set({ board: snapshot, error: fallbackMessage })
+        return false
       }
     }
 
@@ -89,7 +91,7 @@ export function createBoardStore(api: BoardApi) {
 
       async addTicket(input) {
         const optimistic = buildTicket(input)
-        await runOptimistic(
+        return runOptimistic(
           (s) => applyAddTicket(s, optimistic, input.columnId),
           () => api.createTicket(input),
           'Could not create the ticket.',
@@ -98,7 +100,7 @@ export function createBoardStore(api: BoardApi) {
       },
 
       async updateTicket(id, patch) {
-        await runOptimistic(
+        return runOptimistic(
           (s) => applyUpdateTicket(s, id, patch),
           () => api.updateTicket(id, patch),
           'Could not save your changes.',
@@ -106,7 +108,7 @@ export function createBoardStore(api: BoardApi) {
       },
 
       async deleteTicket(id) {
-        await runOptimistic(
+        return runOptimistic(
           (s) => applyDeleteTicket(s, id),
           () => api.deleteTicket(id),
           'Could not delete the ticket.',
@@ -114,7 +116,7 @@ export function createBoardStore(api: BoardApi) {
       },
 
       async moveTicket(id, toColumnId, toIndex) {
-        await runOptimistic(
+        return runOptimistic(
           (s) => applyMoveTicket(s, id, toColumnId, toIndex),
           () => api.moveTicket(id, toColumnId, toIndex),
           'Could not move the ticket.',
@@ -123,7 +125,7 @@ export function createBoardStore(api: BoardApi) {
 
       async addColumn(name) {
         const optimistic = buildColumn(name)
-        await runOptimistic(
+        return runOptimistic(
           (s) => applyAddColumn(s, optimistic),
           () => api.createColumn(name),
           'Could not create the column.',
@@ -132,7 +134,7 @@ export function createBoardStore(api: BoardApi) {
       },
 
       async renameColumn(id, name) {
-        await runOptimistic(
+        return runOptimistic(
           (s) => applyRenameColumn(s, id, name),
           () => api.renameColumn(id, name),
           'Could not rename the column.',
@@ -140,7 +142,7 @@ export function createBoardStore(api: BoardApi) {
       },
 
       async deleteColumn(id, disposition) {
-        await runOptimistic(
+        return runOptimistic(
           (s) => applyDeleteColumn(s, id, disposition),
           () => api.deleteColumn(id, disposition),
           'Could not delete the column.',
@@ -148,7 +150,7 @@ export function createBoardStore(api: BoardApi) {
       },
 
       async reorderColumn(id, toIndex) {
-        await runOptimistic(
+        return runOptimistic(
           (s) => applyReorderColumn(s, id, toIndex),
           () => api.reorderColumn(id, toIndex),
           'Could not reorder the columns.',

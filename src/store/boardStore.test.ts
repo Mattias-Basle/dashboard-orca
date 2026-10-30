@@ -111,6 +111,20 @@ describe('column actions', () => {
   })
 })
 
+describe('action return values', () => {
+  it('resolves true when the action succeeds', async () => {
+    const useStore = await readyStore()
+    const result = await useStore.getState().updateTicket('seed-1', { title: 'Updated' })
+    expect(result).toBe(true)
+  })
+
+  it('resolves false when the API rejects', async () => {
+    const useStore = await readyStore(failingApi('updateTicket'))
+    const result = await useStore.getState().updateTicket('seed-1', { title: 'Updated' })
+    expect(result).toBe(false)
+  })
+})
+
 describe('dismissError', () => {
   it('clears the error', async () => {
     const useStore = await readyStore(failingApi('deleteTicket'))
