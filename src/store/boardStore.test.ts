@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createBoardStore } from './boardStore'
+import { createBoardStore } from './createBoardStore'
 import { LocalStorageBoardApi } from '../api/LocalStorageBoardApi'
 import type { BoardApi } from '../api/BoardApi'
 
